@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"./rietveld"
+	"code.google.com/p/codereviews-extra.rietveld/rietveld"
 )
 
 func main() {
-	list, err := rietveld.Search()
+	list, err := rietveld.Search(nil)
 	if err != nil {
 		log.Fatal(err)
 		return

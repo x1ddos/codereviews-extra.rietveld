@@ -60,9 +60,12 @@ func (r IssuesList) String() string {
 	return fmt.Sprintf("Issues count: %d, Cursor: %s", len(r.Issues), r.Cursor)
 }
 
-func Search() (r *IssuesList, e error) {
+func Search(client *http.Client) (r *IssuesList, e error) {
+	if client == nil {
+		client = http.DefaultClient
+	}
 	url := "https://codereview.appspot.com/search?format=json&limit=10"	
-	resp, err := http.Get(url)
+	resp, err := client.Get(url)
 	if err != nil {
 		e = err
 		return
