@@ -1,0 +1,3 @@
+Simple API client for Rietveld (http://code.google.com/p/rietveld).
+
+See cmd line sample (go run cmdline.go) for usage example.
