@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	"code.google.com/p/go-rietveld/rietveld"
+	"./rietveld"
 )
 
 func main() {
