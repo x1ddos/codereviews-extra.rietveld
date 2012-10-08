@@ -1,30 +1,33 @@
 package rietveld
 
 import (
-	"net/http"
 	"encoding/json"
-	"fmt"
 	"errors"
-	"time"
+	"fmt"
+	"net/http"
 	"strconv"
+	"time"
 )
 
 // Rietveld API time format
-type formattedTime time.Time
+type Timestamp time.Time
+
 const timeFmt = "2006-01-02 15:04:05"
 
-func (t formattedTime) MarshalJSON() ([]byte, error) {
+func (t Timestamp) MarshalJSON() ([]byte, error) {
 	marshaled := time.Time(t).Format(timeFmt)
 	return []byte(strconv.Quote(marshaled)), nil
 }
 
-func (t *formattedTime) UnmarshalJSON(s []byte) (err error) {
-	q, err := strconv.Unquote(string(s))
-	if err != nil {
-		return err
-	}
-	*(*time.Time)(t), err = time.Parse(timeFmt, q)
-	return
+func (t *Timestamp) UnmarshalJSON(s []byte) (err error) {
+	uq, err := strconv.Unquote(string(s))
+	if err != nil { return }
+
+	v, err := time.Parse(timeFmt, uq)
+	if err != nil { return }
+
+	*t = Timestamp(v)
+	return nil
 }
 
 type Issue struct {
@@ -39,14 +42,14 @@ type Issue struct {
 	PatchsetIds []uint `json:"patchsets"`
 	Private     bool
 	Closed      bool
-	Created     formattedTime
-	Modified    formattedTime
+	Created     Timestamp
+	Modified    Timestamp
 }
 
 func (i Issue) String() string {
 	return fmt.Sprintf(
-		"[%d] %s\nBase URL: %s\nOwner: %s (%s)\nReviewers: %s\n" +
-		"Private: %t\nClosed: %t\nUpdated: %s\n",
+		"[%d] %s\nBase URL: %s\nOwner: %s (%s)\nReviewers: %s\n"+
+			"Private: %t\nClosed: %t\nUpdated: %s\n",
 		i.Id, i.Subject, i.BaseUrl, i.Owner, i.OwnerEmail, i.Reviewers,
 		i.Private, i.Closed, time.Time(i.Modified).Format(time.UnixDate))
 }
@@ -64,7 +67,7 @@ func Search(client *http.Client) (r *IssuesList, e error) {
 	if client == nil {
 		client = http.DefaultClient
 	}
-	url := "https://codereview.appspot.com/search?format=json&limit=10"	
+	url := "https://codereview.appspot.com/search?format=json&limit=10"
 	resp, err := client.Get(url)
 	if err != nil {
 		e = err
